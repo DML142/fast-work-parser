@@ -1,9 +1,10 @@
 import { JobEntity } from '../../jobs/entities/job.entity';
 import { RawJob } from '../../common/interfaces/job-source.interface';
 import { hashSourceUrl } from '../../common/hash-source-url';
+import { readString } from '../../common/read-string';
 
 export function normalizeRemoteOkJob(raw: RawJob): JobEntity {
-  const sourceUrl = typeof raw.url === 'string' ? raw.url : '';
+  const sourceUrl = readString(raw.url);
   const salaryMin = typeof raw.salary_min === 'number' ? raw.salary_min : 0;
   const salaryMax = typeof raw.salary_max === 'number' ? raw.salary_max : 0;
   const location = typeof raw.location === 'string' ? raw.location.trim() : '';
@@ -11,9 +12,9 @@ export function normalizeRemoteOkJob(raw: RawJob): JobEntity {
   return {
     id: hashSourceUrl(sourceUrl),
     source: 'RemoteOK',
-    title: typeof raw.position === 'string' ? raw.position : '',
-    company: typeof raw.company === 'string' ? raw.company : '',
-    description: typeof raw.description === 'string' ? raw.description : '',
+    title: readString(raw.position),
+    company: readString(raw.company),
+    description: readString(raw.description),
     // strip commas: TypeORM's simple-array column type splits stack on commas
     stack: Array.isArray(raw.tags)
       ? raw.tags.map((tag) => String(tag).replace(/,/g, ''))
