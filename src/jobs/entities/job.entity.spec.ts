@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { TypeOrmModule, getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { JobEntity } from './job.entity';
+import { FilterRule } from '../../common/interfaces/filter-rule.interface';
 
 describe('JobEntity persistence', () => {
   let repository: Repository<JobEntity>;
@@ -79,5 +80,16 @@ describe('JobEntity persistence', () => {
 
     expect(found?.compensation).toBeNull();
     expect(found?.postedAt).toBeNull();
+  });
+
+  it('composes with a FilterRule implementation against a persisted job', async () => {
+    const found = await repository.findOneBy({ id: 'abc123' });
+
+    const stackMatchProbe: FilterRule = {
+      name: 'StackMatchProbe',
+      matches: (job) => job.stack.includes('React'),
+    };
+
+    expect(stackMatchProbe.matches(found as JobEntity)).toBe(true);
   });
 });
