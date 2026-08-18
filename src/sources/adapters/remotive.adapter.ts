@@ -23,6 +23,6 @@ export class RemotiveAdapter implements JobSource {
       this.http.get<RemotiveApiResponse>(REMOTIVE_API_URL),
     );
 
-    return response.data.jobs;
+    return Array.isArray(response.data?.jobs) ? response.data.jobs : [];
   }
 }

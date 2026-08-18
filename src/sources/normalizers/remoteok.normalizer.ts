@@ -7,7 +7,7 @@ export function normalizeRemoteOkJob(raw: RawJob): JobEntity {
   const sourceUrl = readString(raw.url);
   const salaryMin = typeof raw.salary_min === 'number' ? raw.salary_min : 0;
   const salaryMax = typeof raw.salary_max === 'number' ? raw.salary_max : 0;
-  const location = typeof raw.location === 'string' ? raw.location.trim() : '';
+  const location = readString(raw.location).trim();
 
   return {
     id: hashSourceUrl(sourceUrl),
@@ -17,7 +17,7 @@ export function normalizeRemoteOkJob(raw: RawJob): JobEntity {
     description: readString(raw.description),
     // strip commas: TypeORM's simple-array column type splits stack on commas
     stack: Array.isArray(raw.tags)
-      ? raw.tags.map((tag) => String(tag).replace(/,/g, ''))
+      ? raw.tags.map((tag) => readString(tag).replace(/,/g, ''))
       : [],
     location: location !== '' ? location : 'Remote',
     remoteType: 'remote',

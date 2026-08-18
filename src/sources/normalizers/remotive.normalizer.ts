@@ -31,7 +31,11 @@ export function normalizeRemotiveJob(raw: RawJob): JobEntity {
     sourceUrl,
     postedAt:
       typeof raw.publication_date === 'string'
-        ? new Date(raw.publication_date)
+        ? new Date(
+            /[+-]\d\d:\d\d$|Z$/.test(raw.publication_date)
+              ? raw.publication_date
+              : `${raw.publication_date}Z`,
+          )
         : null,
     fetchedAt: new Date(),
   };

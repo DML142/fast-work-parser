@@ -29,7 +29,7 @@ describe('normalizeRemotiveJob', () => {
     expect(job.sourceUrl).toBe(
       'https://remotive.com/remote-jobs/medical/patient-care-specialist-2091069',
     );
-    expect(job.postedAt).toEqual(new Date('2026-08-16T14:14:11'));
+    expect(job.postedAt).toEqual(new Date('2026-08-16T14:14:11Z'));
     expect(job.fetchedAt).toBeInstanceOf(Date);
     expect(job.id).toMatch(/^[0-9a-f]{64}$/);
   });

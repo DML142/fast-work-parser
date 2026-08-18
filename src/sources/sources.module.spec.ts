@@ -1,16 +1,30 @@
+import { Injectable, Module } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { SourcesModule } from './sources.module';
 import { RemoteOkAdapter } from './adapters/remoteok.adapter';
 import { RemotiveAdapter } from './adapters/remotive.adapter';
 
+@Injectable()
+class ConsumerService {
+  constructor(
+    readonly remoteOkAdapter: RemoteOkAdapter,
+    readonly remotiveAdapter: RemotiveAdapter,
+  ) {}
+}
+
+@Module({ imports: [SourcesModule], providers: [ConsumerService] })
+class ConsumerModule {}
+
 describe('SourcesModule', () => {
-  it('provides both source adapters', async () => {
+  it('exports both source adapters for a consuming module to inject', async () => {
     const moduleRef = await Test.createTestingModule({
-      imports: [SourcesModule],
+      imports: [ConsumerModule],
     }).compile();
 
-    expect(moduleRef.get(RemoteOkAdapter)).toBeInstanceOf(RemoteOkAdapter);
-    expect(moduleRef.get(RemotiveAdapter)).toBeInstanceOf(RemotiveAdapter);
+    const consumerService = moduleRef.get(ConsumerService);
+
+    expect(consumerService.remoteOkAdapter).toBeInstanceOf(RemoteOkAdapter);
+    expect(consumerService.remotiveAdapter).toBeInstanceOf(RemotiveAdapter);
 
     await moduleRef.close();
   });

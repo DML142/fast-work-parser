@@ -1,6 +1,6 @@
 import { Test } from '@nestjs/testing';
 import { HttpService } from '@nestjs/axios';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { AxiosResponse } from 'axios';
 import { RemotiveAdapter } from './remotive.adapter';
 
@@ -51,5 +51,24 @@ describe('RemotiveAdapter', () => {
       id: 2091069,
       title: 'Patient Care Specialist',
     });
+  });
+
+  it('propagates an HTTP error instead of swallowing it', async () => {
+    const httpService = {
+      get: jest
+        .fn()
+        .mockReturnValue(throwError(() => new Error('network down'))),
+    };
+
+    const module = await Test.createTestingModule({
+      providers: [
+        RemotiveAdapter,
+        { provide: HttpService, useValue: httpService },
+      ],
+    }).compile();
+
+    const adapter = module.get(RemotiveAdapter);
+
+    await expect(adapter.fetchJobs()).rejects.toThrow('network down');
   });
 });

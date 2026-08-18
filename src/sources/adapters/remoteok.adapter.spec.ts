@@ -1,6 +1,6 @@
 import { Test } from '@nestjs/testing';
 import { HttpService } from '@nestjs/axios';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { AxiosResponse } from 'axios';
 import { RemoteOkAdapter } from './remoteok.adapter';
 
@@ -45,5 +45,24 @@ describe('RemoteOkAdapter', () => {
     expect(adapter.name).toBe('RemoteOK');
     expect(jobs).toHaveLength(1);
     expect(jobs[0]).toMatchObject({ id: '1136926', position: 'Fire Fighter' });
+  });
+
+  it('propagates an HTTP error instead of swallowing it', async () => {
+    const httpService = {
+      get: jest
+        .fn()
+        .mockReturnValue(throwError(() => new Error('network down'))),
+    };
+
+    const module = await Test.createTestingModule({
+      providers: [
+        RemoteOkAdapter,
+        { provide: HttpService, useValue: httpService },
+      ],
+    }).compile();
+
+    const adapter = module.get(RemoteOkAdapter);
+
+    await expect(adapter.fetchJobs()).rejects.toThrow('network down');
   });
 });
