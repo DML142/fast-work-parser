@@ -83,13 +83,31 @@ describe('JobEntity persistence', () => {
   });
 
   it('composes with a FilterRule implementation against a persisted job', async () => {
-    const found = await repository.findOneBy({ id: 'abc123' });
+    const job: JobEntity = {
+      id: 'ghi789',
+      source: 'RemoteOK',
+      title: 'Frontend Engineer',
+      company: 'Acme Inc',
+      description: 'React role',
+      stack: ['React', 'TypeScript'],
+      location: 'Remote',
+      remoteType: 'remote',
+      contractType: 'contract',
+      compensation: null,
+      sourceUrl: 'https://remoteok.com/jobs/ghi789',
+      postedAt: null,
+      fetchedAt: new Date('2026-08-18T00:00:00.000Z'),
+    };
+    await repository.save(job);
+
+    const found = await repository.findOneBy({ id: 'ghi789' });
+    expect(found).not.toBeNull();
 
     const stackMatchProbe: FilterRule = {
       name: 'StackMatchProbe',
-      matches: (job) => job.stack.includes('React'),
+      matches: (j) => j.stack.includes('React'),
     };
 
-    expect(stackMatchProbe.matches(found as JobEntity)).toBe(true);
+    expect(stackMatchProbe.matches(found!)).toBe(true);
   });
 });
