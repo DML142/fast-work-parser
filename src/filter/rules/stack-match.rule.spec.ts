@@ -74,6 +74,21 @@ describe('StackMatchRule', () => {
     expect(rule.matches(job)).toBe(false);
   });
 
+  it('matches on JavaScript and Node.js, covering backend/fullstack roles', () => {
+    const rule = new StackMatchRule(DEFAULT_STACK_KEYWORDS);
+    const backendJob = buildJobEntity({
+      description: 'We need a Node.js backend engineer.',
+      stack: [],
+    });
+    const jsJob = buildJobEntity({
+      description: 'Strong JavaScript fundamentals required.',
+      stack: [],
+    });
+
+    expect(rule.matches(backendJob)).toBe(true);
+    expect(rule.matches(jsJob)).toBe(true);
+  });
+
   it('respects a custom keyword list injected via the constructor', () => {
     const rule = new StackMatchRule(['Rust']);
     const job = buildJobEntity({

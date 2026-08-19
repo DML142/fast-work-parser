@@ -8,6 +8,8 @@ export const DEFAULT_STACK_KEYWORDS: readonly string[] = [
   'NestJS',
   'TypeScript',
   'Zustand',
+  'JavaScript',
+  'Node.js',
 ];
 
 function escapeRegExp(value: string): string {

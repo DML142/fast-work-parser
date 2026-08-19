@@ -38,9 +38,14 @@ describe('FilterModule', () => {
     const redFlagJob = buildJobEntity({
       description: 'React role, but must be a US citizen due to compliance.',
     });
+    const locationRequiredJob = buildJobEntity({
+      description:
+        'React role. Требуется проживание в РФ на постоянной основе.',
+    });
 
     expect(filterService.passes(goodJob)).toBe(true);
     expect(filterService.passes(redFlagJob)).toBe(false);
+    expect(filterService.passes(locationRequiredJob)).toBe(false);
 
     await moduleRef.close();
   });

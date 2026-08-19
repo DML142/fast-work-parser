@@ -4,19 +4,26 @@ import { RemoteOkAdapter } from './adapters/remoteok.adapter';
 import { RemotiveAdapter } from './adapters/remotive.adapter';
 import { WeWorkRemotelyAdapter } from './adapters/weworkremotely.adapter';
 import { DjinniAdapter } from './adapters/djinni.adapter';
+import { HhAdapter } from './adapters/hh.adapter';
 import { normalizeRemoteOkJob } from './normalizers/remoteok.normalizer';
 import { normalizeRemotiveJob } from './normalizers/remotive.normalizer';
 import { normalizeWeWorkRemotelyJob } from './normalizers/weworkremotely.normalizer';
 import { normalizeDjinniJob } from './normalizers/djinni.normalizer';
+import { normalizeHhJob } from './normalizers/hh.normalizer';
 import { JOB_SOURCES, NormalizingJobSource } from './job-sources.token';
 
 @Module({
-  imports: [HttpModule.register({ timeout: 10_000 })],
+  // 35s: hh.ru's response time is inconsistent (observed live: 0.9s-28.6s, occasionally
+  // timing out), well beyond the other sources' typical sub-second response times. A
+  // slow/failed hh.ru fetch doesn't block the pipeline — SchedulerService's per-source
+  // try/catch just yields 0 jobs from it for that run.
+  imports: [HttpModule.register({ timeout: 35_000 })],
   providers: [
     RemoteOkAdapter,
     RemotiveAdapter,
     WeWorkRemotelyAdapter,
     DjinniAdapter,
+    HhAdapter,
     {
       provide: JOB_SOURCES,
       useFactory: (
@@ -24,6 +31,7 @@ import { JOB_SOURCES, NormalizingJobSource } from './job-sources.token';
         remotive: RemotiveAdapter,
         weWorkRemotely: WeWorkRemotelyAdapter,
         djinni: DjinniAdapter,
+        hh: HhAdapter,
       ): NormalizingJobSource[] => [
         {
           name: remoteOk.name,
@@ -45,12 +53,18 @@ import { JOB_SOURCES, NormalizingJobSource } from './job-sources.token';
           fetchJobs: () => djinni.fetchJobs(),
           normalize: normalizeDjinniJob,
         },
+        {
+          name: hh.name,
+          fetchJobs: () => hh.fetchJobs(),
+          normalize: normalizeHhJob,
+        },
       ],
       inject: [
         RemoteOkAdapter,
         RemotiveAdapter,
         WeWorkRemotelyAdapter,
         DjinniAdapter,
+        HhAdapter,
       ],
     },
   ],
@@ -59,6 +73,7 @@ import { JOB_SOURCES, NormalizingJobSource } from './job-sources.token';
     RemotiveAdapter,
     WeWorkRemotelyAdapter,
     DjinniAdapter,
+    HhAdapter,
     JOB_SOURCES,
   ],
 })
