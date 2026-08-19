@@ -5,6 +5,7 @@ import { RemoteOkAdapter } from './adapters/remoteok.adapter';
 import { RemotiveAdapter } from './adapters/remotive.adapter';
 import { WeWorkRemotelyAdapter } from './adapters/weworkremotely.adapter';
 import { DjinniAdapter } from './adapters/djinni.adapter';
+import { HhAdapter } from './adapters/hh.adapter';
 import { JOB_SOURCES, NormalizingJobSource } from './job-sources.token';
 
 @Injectable()
@@ -14,6 +15,7 @@ class ConsumerService {
     readonly remotiveAdapter: RemotiveAdapter,
     readonly weWorkRemotelyAdapter: WeWorkRemotelyAdapter,
     readonly djinniAdapter: DjinniAdapter,
+    readonly hhAdapter: HhAdapter,
   ) {}
 }
 
@@ -34,6 +36,7 @@ describe('SourcesModule', () => {
       WeWorkRemotelyAdapter,
     );
     expect(consumerService.djinniAdapter).toBeInstanceOf(DjinniAdapter);
+    expect(consumerService.hhAdapter).toBeInstanceOf(HhAdapter);
 
     await moduleRef.close();
   });
@@ -50,6 +53,7 @@ describe('SourcesModule', () => {
       'RemoteOK',
       'Remotive',
       'WeWorkRemotely',
+      'hh.ru',
     ]);
     expect(
       sources.every((source) => typeof source.normalize === 'function'),

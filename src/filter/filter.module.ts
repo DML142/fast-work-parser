@@ -10,6 +10,10 @@ import {
   VisaRedFlagRule,
   DEFAULT_VISA_RED_FLAGS,
 } from './rules/visa-red-flag.rule';
+import {
+  LocationRequirementRule,
+  DEFAULT_HOME_COUNTRY,
+} from './rules/location-requirement.rule';
 
 @Module({
   providers: [
@@ -22,12 +26,17 @@ import {
       useFactory: () => new VisaRedFlagRule(DEFAULT_VISA_RED_FLAGS),
     },
     {
+      provide: LocationRequirementRule,
+      useFactory: () => new LocationRequirementRule(DEFAULT_HOME_COUNTRY),
+    },
+    {
       provide: FILTER_RULES,
       useFactory: (
         stackMatch: StackMatchRule,
         visaRedFlag: VisaRedFlagRule,
-      ): FilterRule[] => [stackMatch, visaRedFlag],
-      inject: [StackMatchRule, VisaRedFlagRule],
+        locationRequirement: LocationRequirementRule,
+      ): FilterRule[] => [stackMatch, visaRedFlag, locationRequirement],
+      inject: [StackMatchRule, VisaRedFlagRule, LocationRequirementRule],
     },
     FilterService,
   ],
