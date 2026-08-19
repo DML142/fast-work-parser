@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { JobsModule } from './jobs/jobs.module';
 import { JobEntity } from './jobs/entities/job.entity';
+import { SourcesModule } from './sources/sources.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { JobEntity } from './jobs/entities/job.entity';
       synchronize: true,
     }),
     JobsModule,
+    SourcesModule,
   ],
 })
 export class AppModule {}
