@@ -3,6 +3,7 @@ import { Test } from '@nestjs/testing';
 import { SourcesModule } from './sources.module';
 import { RemoteOkAdapter } from './adapters/remoteok.adapter';
 import { RemotiveAdapter } from './adapters/remotive.adapter';
+import { JOB_SOURCES, NormalizingJobSource } from './job-sources.token';
 
 @Injectable()
 class ConsumerService {
@@ -25,6 +26,24 @@ describe('SourcesModule', () => {
 
     expect(consumerService.remoteOkAdapter).toBeInstanceOf(RemoteOkAdapter);
     expect(consumerService.remotiveAdapter).toBeInstanceOf(RemotiveAdapter);
+
+    await moduleRef.close();
+  });
+
+  it('exports JOB_SOURCES pairing each adapter with its normalizer', async () => {
+    const moduleRef = await Test.createTestingModule({
+      imports: [SourcesModule],
+    }).compile();
+
+    const sources = moduleRef.get<NormalizingJobSource[]>(JOB_SOURCES);
+
+    expect(sources.map((source) => source.name).sort()).toEqual([
+      'RemoteOK',
+      'Remotive',
+    ]);
+    expect(
+      sources.every((source) => typeof source.normalize === 'function'),
+    ).toBe(true);
 
     await moduleRef.close();
   });
