@@ -6,6 +6,7 @@ import { JobEntity } from './jobs/entities/job.entity';
 import { SourcesModule } from './sources/sources.module';
 import { FilterModule } from './filter/filter.module';
 import { PersistenceModule } from './persistence/persistence.module';
+import { NotifierModule } from './notifier/notifier.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { PersistenceModule } from './persistence/persistence.module';
     SourcesModule,
     FilterModule,
     PersistenceModule,
+    NotifierModule,
   ],
 })
 export class AppModule {}
