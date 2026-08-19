@@ -3,10 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { JobsModule } from './jobs/jobs.module';
 import { JobEntity } from './jobs/entities/job.entity';
-import { SourcesModule } from './sources/sources.module';
-import { FilterModule } from './filter/filter.module';
-import { PersistenceModule } from './persistence/persistence.module';
-import { NotifierModule } from './notifier/notifier.module';
+import { SchedulerModule } from './scheduler/scheduler.module';
 
 @Module({
   imports: [
@@ -18,10 +15,7 @@ import { NotifierModule } from './notifier/notifier.module';
       synchronize: true,
     }),
     JobsModule,
-    SourcesModule,
-    FilterModule,
-    PersistenceModule,
-    NotifierModule,
+    SchedulerModule,
   ],
 })
 export class AppModule {}
