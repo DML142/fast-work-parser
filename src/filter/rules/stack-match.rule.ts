@@ -21,8 +21,10 @@ export class StackMatchRule implements FilterRule {
   constructor(private readonly keywords: readonly string[]) {}
 
   // Word-boundary matching prevents false positives like "Reactive" matching the "React" keyword.
+  // job.stack is intentionally excluded: some sources (e.g. RemoteOK) sometimes return a
+  // generic site-wide tag list instead of per-job tags, making it an unreliable match source.
   matches(job: JobEntity): boolean {
-    const haystack = [job.title, job.description, ...job.stack].join(' ');
+    const haystack = [job.title, job.description].join(' ');
     return this.keywords.some((keyword) =>
       new RegExp(`\\b${escapeRegExp(keyword)}\\b`, 'i').test(haystack),
     );
