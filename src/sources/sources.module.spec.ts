@@ -3,6 +3,8 @@ import { Test } from '@nestjs/testing';
 import { SourcesModule } from './sources.module';
 import { RemoteOkAdapter } from './adapters/remoteok.adapter';
 import { RemotiveAdapter } from './adapters/remotive.adapter';
+import { WeWorkRemotelyAdapter } from './adapters/weworkremotely.adapter';
+import { DjinniAdapter } from './adapters/djinni.adapter';
 import { JOB_SOURCES, NormalizingJobSource } from './job-sources.token';
 
 @Injectable()
@@ -10,6 +12,8 @@ class ConsumerService {
   constructor(
     readonly remoteOkAdapter: RemoteOkAdapter,
     readonly remotiveAdapter: RemotiveAdapter,
+    readonly weWorkRemotelyAdapter: WeWorkRemotelyAdapter,
+    readonly djinniAdapter: DjinniAdapter,
   ) {}
 }
 
@@ -17,7 +21,7 @@ class ConsumerService {
 class ConsumerModule {}
 
 describe('SourcesModule', () => {
-  it('exports both source adapters for a consuming module to inject', async () => {
+  it('exports all source adapters for a consuming module to inject', async () => {
     const moduleRef = await Test.createTestingModule({
       imports: [ConsumerModule],
     }).compile();
@@ -26,6 +30,10 @@ describe('SourcesModule', () => {
 
     expect(consumerService.remoteOkAdapter).toBeInstanceOf(RemoteOkAdapter);
     expect(consumerService.remotiveAdapter).toBeInstanceOf(RemotiveAdapter);
+    expect(consumerService.weWorkRemotelyAdapter).toBeInstanceOf(
+      WeWorkRemotelyAdapter,
+    );
+    expect(consumerService.djinniAdapter).toBeInstanceOf(DjinniAdapter);
 
     await moduleRef.close();
   });
@@ -38,8 +46,10 @@ describe('SourcesModule', () => {
     const sources = moduleRef.get<NormalizingJobSource[]>(JOB_SOURCES);
 
     expect(sources.map((source) => source.name).sort()).toEqual([
+      'Djinni',
       'RemoteOK',
       'Remotive',
+      'WeWorkRemotely',
     ]);
     expect(
       sources.every((source) => typeof source.normalize === 'function'),
