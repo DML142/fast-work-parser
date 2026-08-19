@@ -5,6 +5,7 @@ import { JobsModule } from './jobs/jobs.module';
 import { JobEntity } from './jobs/entities/job.entity';
 import { SourcesModule } from './sources/sources.module';
 import { FilterModule } from './filter/filter.module';
+import { PersistenceModule } from './persistence/persistence.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { FilterModule } from './filter/filter.module';
     JobsModule,
     SourcesModule,
     FilterModule,
+    PersistenceModule,
   ],
 })
 export class AppModule {}
