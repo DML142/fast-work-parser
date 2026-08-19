@@ -17,6 +17,7 @@ export class VisaRedFlagRule implements FilterRule {
 
   constructor(private readonly redFlags: readonly string[]) {}
 
+  // Red-flag phrases match as substrings per spec, not word-boundaries.
   matches(job: JobEntity): boolean {
     const haystack = job.description.toLowerCase();
     return !this.redFlags.some((flag) => haystack.includes(flag.toLowerCase()));

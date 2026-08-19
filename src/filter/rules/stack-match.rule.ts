@@ -20,6 +20,7 @@ export class StackMatchRule implements FilterRule {
 
   constructor(private readonly keywords: readonly string[]) {}
 
+  // Word-boundary matching prevents false positives like "Reactive" matching the "React" keyword.
   matches(job: JobEntity): boolean {
     const haystack = [job.title, job.description, ...job.stack].join(' ');
     return this.keywords.some((keyword) =>
