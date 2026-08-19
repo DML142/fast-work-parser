@@ -27,14 +27,18 @@ describe('StackMatchRule', () => {
     expect(rule.matches(job)).toBe(true);
   });
 
-  it('matches a keyword found only in the stack array', () => {
+  // RemoteOK's `tags` field is sometimes a generic site-wide taxonomy rather than
+  // per-job tags (e.g. an "Aviation Maintenance Technician" posting tagged "react",
+  // "typescript"), so the stack array isn't a trustworthy match source.
+  it('does not match a keyword found only in the stack array', () => {
     const rule = new StackMatchRule(DEFAULT_STACK_KEYWORDS);
     const job = buildJobEntity({
+      title: 'Aviation Maintenance Technician',
       description: 'Great opportunity, apply now.',
       stack: ['Zustand', 'Vite'],
     });
 
-    expect(rule.matches(job)).toBe(true);
+    expect(rule.matches(job)).toBe(false);
   });
 
   it('matches a multi-token keyword like Next.js', () => {
