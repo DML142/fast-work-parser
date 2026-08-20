@@ -8,6 +8,7 @@ describe('normalizeRemotiveJob', () => {
       url: 'https://remotive.com/remote-jobs/medical/patient-care-specialist-2091069',
       title: 'Patient Care Specialist',
       company_name: 'STATLINX',
+      company_logo_url: 'https://remotive.com/logos/statlinx.png',
       tags: ['research', 'insurance'],
       job_type: 'full_time',
       publication_date: '2026-08-16T14:14:11',
@@ -21,6 +22,7 @@ describe('normalizeRemotiveJob', () => {
     expect(job.source).toBe('Remotive');
     expect(job.title).toBe('Patient Care Specialist');
     expect(job.company).toBe('STATLINX');
+    expect(job.companyLogoUrl).toBe('https://remotive.com/logos/statlinx.png');
     expect(job.stack).toEqual(['research', 'insurance']);
     expect(job.location).toBe('USA');
     expect(job.remoteType).toBe('remote');
@@ -34,7 +36,7 @@ describe('normalizeRemotiveJob', () => {
     expect(job.id).toMatch(/^[0-9a-f]{64}$/);
   });
 
-  it('maps job_type "contract" to contractType "contract", unknown job_types to "unknown", and blank salary to null', () => {
+  it('maps job_type "contract" to contractType "contract", unknown job_types to "unknown", blank salary to null, and missing logo to null', () => {
     const contractRaw: RawJob = {
       id: 1,
       url: 'https://remotive.com/remote-jobs/design/contractor-1',
@@ -56,6 +58,7 @@ describe('normalizeRemotiveJob', () => {
 
     expect(normalizeRemotiveJob(contractRaw).contractType).toBe('contract');
     expect(normalizeRemotiveJob(contractRaw).compensation).toBeNull();
+    expect(normalizeRemotiveJob(contractRaw).companyLogoUrl).toBeNull();
     expect(normalizeRemotiveJob(freelanceRaw).contractType).toBe('unknown');
   });
 });

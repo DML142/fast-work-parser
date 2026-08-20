@@ -26,6 +26,8 @@ export function normalizeWeWorkRemotelyJob(raw: RawJob): JobEntity {
     source: 'WeWorkRemotely',
     title,
     company,
+    // WeWorkRemotely's RSS feed doesn't include a logo URL.
+    companyLogoUrl: null,
     description: readString(raw.content),
     stack: [],
     location: region !== '' ? region : 'Remote',

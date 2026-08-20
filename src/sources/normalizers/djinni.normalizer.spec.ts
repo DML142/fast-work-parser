@@ -16,6 +16,7 @@ describe('normalizeDjinniJob', () => {
     expect(job.source).toBe('Djinni');
     expect(job.title).toBe('Senior React Developer');
     expect(job.company).toBe('N-iX');
+    expect(job.companyLogoUrl).toBeNull();
     expect(job.description).toBe(
       'We are looking for a Senior React Developer...',
     );

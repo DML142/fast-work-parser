@@ -16,6 +16,7 @@ describe('normalizeWeWorkRemotelyJob', () => {
 
     expect(job.source).toBe('WeWorkRemotely');
     expect(job.company).toBe('Stripe');
+    expect(job.companyLogoUrl).toBeNull();
     expect(job.title).toBe('Staff Backend Engineer');
     expect(job.description).toBe('<p>Build payments infrastructure.</p>');
     expect(job.stack).toEqual([]);

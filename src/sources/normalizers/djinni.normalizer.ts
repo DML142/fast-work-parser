@@ -12,6 +12,8 @@ export function normalizeDjinniJob(raw: RawJob): JobEntity {
     source: 'Djinni',
     title: readString(raw.title),
     company: readString(raw.company),
+    // Djinni's listing page doesn't expose a logo URL.
+    companyLogoUrl: null,
     description: readString(raw.description),
     stack: [],
     location: location !== '' ? location : 'Remote',

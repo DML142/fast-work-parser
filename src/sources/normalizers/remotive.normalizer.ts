@@ -13,12 +13,14 @@ export function normalizeRemotiveJob(raw: RawJob): JobEntity {
   const jobType = readString(raw.job_type);
   const salary = readString(raw.salary).trim();
   const location = readString(raw.candidate_required_location).trim();
+  const companyLogoUrl = readString(raw.company_logo_url);
 
   return {
     id: hashSourceUrl(sourceUrl),
     source: 'Remotive',
     title: readString(raw.title),
     company: readString(raw.company_name),
+    companyLogoUrl: companyLogoUrl !== '' ? companyLogoUrl : null,
     description: readString(raw.description),
     // strip commas: TypeORM's simple-array column type splits stack on commas
     stack: Array.isArray(raw.tags)

@@ -8,12 +8,14 @@ export function normalizeRemoteOkJob(raw: RawJob): JobEntity {
   const salaryMin = typeof raw.salary_min === 'number' ? raw.salary_min : 0;
   const salaryMax = typeof raw.salary_max === 'number' ? raw.salary_max : 0;
   const location = readString(raw.location).trim();
+  const companyLogoUrl = readString(raw.company_logo);
 
   return {
     id: hashSourceUrl(sourceUrl),
     source: 'RemoteOK',
     title: readString(raw.position),
     company: readString(raw.company),
+    companyLogoUrl: companyLogoUrl !== '' ? companyLogoUrl : null,
     description: readString(raw.description),
     // strip commas: TypeORM's simple-array column type splits stack on commas
     stack: Array.isArray(raw.tags)

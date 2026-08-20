@@ -6,6 +6,7 @@ describe('normalizeRemoteOkJob', () => {
     const raw: RawJob = {
       id: '1136926',
       company: 'Adani Airport Holdings Ltd',
+      company_logo: 'https://remoteok.com/assets/logos/adani.png',
       position: 'Fire Fighter',
       tags: ['infosec', 'education'],
       description: '<strong>About Business</strong>',
@@ -21,6 +22,9 @@ describe('normalizeRemoteOkJob', () => {
     expect(job.source).toBe('RemoteOK');
     expect(job.title).toBe('Fire Fighter');
     expect(job.company).toBe('Adani Airport Holdings Ltd');
+    expect(job.companyLogoUrl).toBe(
+      'https://remoteok.com/assets/logos/adani.png',
+    );
     expect(job.stack).toEqual(['infosec', 'education']);
     expect(job.location).toBe('Mangaluru,');
     expect(job.remoteType).toBe('remote');
@@ -34,7 +38,7 @@ describe('normalizeRemoteOkJob', () => {
     expect(job.id).toMatch(/^[0-9a-f]{64}$/);
   });
 
-  it('defaults compensation to null, location to Remote, and strips commas from tags', () => {
+  it('defaults compensation to null, location to Remote, companyLogoUrl to null, and strips commas from tags', () => {
     const raw: RawJob = {
       id: '999',
       company: 'Acme',
@@ -52,6 +56,7 @@ describe('normalizeRemoteOkJob', () => {
 
     expect(job.compensation).toBeNull();
     expect(job.location).toBe('Remote');
+    expect(job.companyLogoUrl).toBeNull();
     expect(job.stack).toEqual(['Node.js Express', 'React']);
   });
 });

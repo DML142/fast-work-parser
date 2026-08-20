@@ -18,6 +18,7 @@ describe('normalizeHhJob', () => {
     expect(job.source).toBe('hh.ru');
     expect(job.title).toBe('Senior Frontend Developer (React)');
     expect(job.company).toBe('ООО Рога и Копыта');
+    expect(job.companyLogoUrl).toBeNull();
     expect(job.description).toBe(
       'We are looking for a Senior Frontend Developer with React experience.',
     );
