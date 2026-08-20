@@ -3,12 +3,12 @@ import { buildJobEntity } from '../../common/testing/job-entity.fixture';
 
 describe('VisaRedFlagRule', () => {
   it('has the name VisaRedFlagRule', () => {
-    const rule = new VisaRedFlagRule(DEFAULT_VISA_RED_FLAGS);
+    const rule = new VisaRedFlagRule(() => DEFAULT_VISA_RED_FLAGS);
     expect(rule.name).toBe('VisaRedFlagRule');
   });
 
   it('passes (returns true) when the description has no red flag', () => {
-    const rule = new VisaRedFlagRule(DEFAULT_VISA_RED_FLAGS);
+    const rule = new VisaRedFlagRule(() => DEFAULT_VISA_RED_FLAGS);
     const job = buildJobEntity({
       description: 'Fully remote role open to applicants worldwide.',
     });
@@ -17,7 +17,7 @@ describe('VisaRedFlagRule', () => {
   });
 
   it('fails (returns false) when the description contains "US citizen"', () => {
-    const rule = new VisaRedFlagRule(DEFAULT_VISA_RED_FLAGS);
+    const rule = new VisaRedFlagRule(() => DEFAULT_VISA_RED_FLAGS);
     const job = buildJobEntity({
       description: 'Must be a US citizen due to federal contract requirements.',
     });
@@ -26,7 +26,7 @@ describe('VisaRedFlagRule', () => {
   });
 
   it('matches red flags case-insensitively', () => {
-    const rule = new VisaRedFlagRule(DEFAULT_VISA_RED_FLAGS);
+    const rule = new VisaRedFlagRule(() => DEFAULT_VISA_RED_FLAGS);
     const job = buildJobEntity({
       description: 'Candidate must hold an active SECURITY CLEARANCE.',
     });
@@ -35,7 +35,7 @@ describe('VisaRedFlagRule', () => {
   });
 
   it('fails on "no visa sponsorship"', () => {
-    const rule = new VisaRedFlagRule(DEFAULT_VISA_RED_FLAGS);
+    const rule = new VisaRedFlagRule(() => DEFAULT_VISA_RED_FLAGS);
     const job = buildJobEntity({
       description: 'Unfortunately we offer no visa sponsorship at this time.',
     });
@@ -44,7 +44,7 @@ describe('VisaRedFlagRule', () => {
   });
 
   it('fails on "must be based in the US"', () => {
-    const rule = new VisaRedFlagRule(DEFAULT_VISA_RED_FLAGS);
+    const rule = new VisaRedFlagRule(() => DEFAULT_VISA_RED_FLAGS);
     const job = buildJobEntity({
       description: 'Applicants must be based in the US for this role.',
     });
@@ -53,7 +53,7 @@ describe('VisaRedFlagRule', () => {
   });
 
   it('matches as a substring, not a whole-word boundary', () => {
-    const rule = new VisaRedFlagRule(['clearance']);
+    const rule = new VisaRedFlagRule(() => ['clearance']);
     const job = buildJobEntity({
       description: 'Requires prior security-clearance-adjacent experience.',
     });
@@ -61,12 +61,23 @@ describe('VisaRedFlagRule', () => {
     expect(rule.matches(job)).toBe(false);
   });
 
-  it('respects a custom red-flag list injected via the constructor', () => {
-    const rule = new VisaRedFlagRule(['green card required']);
+  it('respects a custom red-flag list injected via the getter', () => {
+    const rule = new VisaRedFlagRule(() => ['green card required']);
     const job = buildJobEntity({
       description: 'Green Card Required for this position.',
     });
 
+    expect(rule.matches(job)).toBe(false);
+  });
+
+  it('reflects a change in what the getter returns between calls', () => {
+    let redFlags: readonly string[] = ['security clearance'];
+    const rule = new VisaRedFlagRule(() => redFlags);
+    const job = buildJobEntity({ description: 'Requires a valid passport.' });
+
+    expect(rule.matches(job)).toBe(true);
+
+    redFlags = ['passport'];
     expect(rule.matches(job)).toBe(false);
   });
 });

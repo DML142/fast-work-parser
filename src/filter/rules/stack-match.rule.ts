@@ -20,14 +20,16 @@ function escapeRegExp(value: string): string {
 export class StackMatchRule implements FilterRule {
   readonly name = 'StackMatchRule';
 
-  constructor(private readonly keywords: readonly string[]) {}
+  // Takes a getter (not a fixed array) so the keyword list can be edited
+  // live via FilterConfigService without recreating this rule.
+  constructor(private readonly getKeywords: () => readonly string[]) {}
 
   // Word-boundary matching prevents false positives like "Reactive" matching the "React" keyword.
   // job.stack is intentionally excluded: some sources (e.g. RemoteOK) sometimes return a
   // generic site-wide tag list instead of per-job tags, making it an unreliable match source.
   matches(job: JobEntity): boolean {
     const haystack = [job.title, job.description].join(' ');
-    return this.keywords.some((keyword) =>
+    return this.getKeywords().some((keyword) =>
       new RegExp(`\\b${escapeRegExp(keyword)}\\b`, 'i').test(haystack),
     );
   }

@@ -1,6 +1,13 @@
 import { Module } from '@nestjs/common';
+import { TypeOrmModule, getRepositoryToken } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { FILTER_RULES } from './filter-rules.token';
 import { FilterService } from './filter.service';
+import {
+  FilterConfigService,
+  loadOrSeedFilterConfig,
+} from './filter-config.service';
+import { FilterConfigEntity } from './entities/filter-config.entity';
 import { FilterRule } from '../common/interfaces/filter-rule.interface';
 import {
   StackMatchRule,
@@ -16,14 +23,30 @@ import {
 } from './rules/location-requirement.rule';
 
 @Module({
+  imports: [TypeOrmModule.forFeature([FilterConfigEntity])],
   providers: [
     {
+      provide: FilterConfigService,
+      useFactory: async (repository: Repository<FilterConfigEntity>) => {
+        const row = await loadOrSeedFilterConfig(repository, {
+          includeKeywords: DEFAULT_STACK_KEYWORDS,
+          excludeKeywords: DEFAULT_VISA_RED_FLAGS,
+        });
+        return new FilterConfigService(repository, row);
+      },
+      inject: [getRepositoryToken(FilterConfigEntity)],
+    },
+    {
       provide: StackMatchRule,
-      useFactory: () => new StackMatchRule(DEFAULT_STACK_KEYWORDS),
+      useFactory: (filterConfigService: FilterConfigService) =>
+        new StackMatchRule(() => filterConfigService.includeKeywords),
+      inject: [FilterConfigService],
     },
     {
       provide: VisaRedFlagRule,
-      useFactory: () => new VisaRedFlagRule(DEFAULT_VISA_RED_FLAGS),
+      useFactory: (filterConfigService: FilterConfigService) =>
+        new VisaRedFlagRule(() => filterConfigService.excludeKeywords),
+      inject: [FilterConfigService],
     },
     {
       provide: LocationRequirementRule,
@@ -40,6 +63,6 @@ import {
     },
     FilterService,
   ],
-  exports: [FilterService],
+  exports: [FilterService, FilterConfigService],
 })
 export class FilterModule {}

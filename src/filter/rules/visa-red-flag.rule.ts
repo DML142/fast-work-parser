@@ -15,11 +15,15 @@ export const DEFAULT_VISA_RED_FLAGS: readonly string[] = [
 export class VisaRedFlagRule implements FilterRule {
   readonly name = 'VisaRedFlagRule';
 
-  constructor(private readonly redFlags: readonly string[]) {}
+  // Takes a getter (not a fixed array) so the exclude list can be edited
+  // live via FilterConfigService without recreating this rule.
+  constructor(private readonly getRedFlags: () => readonly string[]) {}
 
   // Red-flag phrases match as substrings per spec, not word-boundaries.
   matches(job: JobEntity): boolean {
     const haystack = job.description.toLowerCase();
-    return !this.redFlags.some((flag) => haystack.includes(flag.toLowerCase()));
+    return !this.getRedFlags().some((flag) =>
+      haystack.includes(flag.toLowerCase()),
+    );
   }
 }
