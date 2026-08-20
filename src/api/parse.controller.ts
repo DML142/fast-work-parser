@@ -1,8 +1,10 @@
 import {
   Controller,
   Get,
+  HttpCode,
   HttpException,
   HttpStatus,
+  Logger,
   Post,
   UseGuards,
 } from '@nestjs/common';
@@ -19,6 +21,8 @@ interface ParseStatusResponse {
 @UseGuards(TelegramInitDataGuard)
 @Controller('api/parse')
 export class ParseController {
+  private readonly logger = new Logger(ParseController.name);
+
   constructor(
     private readonly schedulerService: SchedulerService,
     private readonly filterConfigService: FilterConfigService,
@@ -34,15 +38,20 @@ export class ParseController {
     };
   }
 
+  // Fire-and-forget: a full run can outlast both the HTTP request and the
+  // cooldown window, so the response must not wait on it.
   @Post()
-  async trigger(): Promise<ParseStatusResponse> {
+  @HttpCode(HttpStatus.ACCEPTED)
+  trigger(): ParseStatusResponse {
     if (!this.cooldownTracker.tryAcquire()) {
       throw new HttpException(
         { cooldownRemainingSeconds: this.cooldownTracker.remainingSeconds() },
         HttpStatus.TOO_MANY_REQUESTS,
       );
     }
-    await this.schedulerService.runPipeline();
+    this.schedulerService.runPipeline().catch((error: Error) => {
+      this.logger.error('Manual parse run failed', error);
+    });
     return this.status();
   }
 }
