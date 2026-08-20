@@ -7,6 +7,8 @@ import {
 import { FilterService } from '../filter/filter.service';
 import { PersistenceService } from '../persistence/persistence.service';
 import { NotifierService } from '../notifier/notifier.service';
+import { SourceConfigService } from '../sources/source-config.service';
+import { FilterConfigService } from '../filter/filter-config.service';
 import { JobEntity } from '../jobs/entities/job.entity';
 
 @Injectable()
@@ -18,6 +20,8 @@ export class SchedulerService {
     private readonly filterService: FilterService,
     private readonly persistenceService: PersistenceService,
     private readonly notifierService: NotifierService,
+    private readonly sourceConfigService: SourceConfigService,
+    private readonly filterConfigService: FilterConfigService,
   ) {}
 
   @Cron(CronExpression.EVERY_6_HOURS)
@@ -26,11 +30,16 @@ export class SchedulerService {
     const filtered = normalized.filter((job) => this.filterService.passes(job));
     const newJobs = await this.persistenceService.saveNewJobs(filtered);
     await this.notifierService.notify(newJobs);
+    await this.filterConfigService.recordParseRun();
   }
 
   private async fetchAndNormalizeAll(): Promise<JobEntity[]> {
+    const enabledSources = this.sources.filter((source) =>
+      this.sourceConfigService.isEnabled(source.name),
+    );
+
     const results = await Promise.all(
-      this.sources.map(async (source) => {
+      enabledSources.map(async (source) => {
         try {
           const rawJobs = await source.fetchJobs();
           return rawJobs.map((raw) => source.normalize(raw));
