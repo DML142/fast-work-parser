@@ -4,6 +4,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { SchedulerModule } from './scheduler.module';
 import { SchedulerService } from './scheduler.service';
 import { JobEntity } from '../jobs/entities/job.entity';
+import { FilterConfigEntity } from '../filter/entities/filter-config.entity';
+import { SourceConfigEntity } from '../sources/entities/source-config.entity';
 import {
   TELEGRAM_CLIENT,
   TelegramClient,
@@ -26,7 +28,7 @@ describe('SchedulerModule', () => {
         TypeOrmModule.forRoot({
           type: 'better-sqlite3',
           database: ':memory:',
-          entities: [JobEntity],
+          entities: [JobEntity, FilterConfigEntity, SourceConfigEntity],
           synchronize: true,
         }),
         SchedulerModule,
