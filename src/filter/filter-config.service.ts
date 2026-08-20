@@ -7,7 +7,10 @@ import {
 
 export async function loadOrSeedFilterConfig(
   repository: Repository<FilterConfigEntity>,
-  defaults: { includeKeywords: readonly string[]; excludeKeywords: readonly string[] },
+  defaults: {
+    includeKeywords: readonly string[];
+    excludeKeywords: readonly string[];
+  },
 ): Promise<FilterConfigEntity> {
   const existing = await repository.findOneBy({ id: FILTER_CONFIG_ROW_ID });
   if (existing) {

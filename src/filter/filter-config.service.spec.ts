@@ -5,7 +5,10 @@ import {
   FilterConfigEntity,
   FILTER_CONFIG_ROW_ID,
 } from './entities/filter-config.entity';
-import { FilterConfigService, loadOrSeedFilterConfig } from './filter-config.service';
+import {
+  FilterConfigService,
+  loadOrSeedFilterConfig,
+} from './filter-config.service';
 
 describe('loadOrSeedFilterConfig', () => {
   let repository: Repository<FilterConfigEntity>;
