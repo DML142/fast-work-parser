@@ -6,6 +6,7 @@ export function buildJobEntity(overrides: Partial<JobEntity> = {}): JobEntity {
   job.source = 'FixtureSource';
   job.title = 'Senior Full-Stack Developer';
   job.company = 'Acme Inc';
+  job.companyLogoUrl = null;
   job.description = 'We are looking for a React and NestJS developer.';
   job.stack = ['React', 'NestJS'];
   job.location = 'Remote';

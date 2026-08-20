@@ -36,6 +36,7 @@ describe('JobEntity persistence', () => {
       source: 'RemoteOK',
       title: 'Senior React Developer',
       company: 'Acme Inc',
+      companyLogoUrl: 'https://example.com/logo.png',
       description: 'Looking for a React/Next.js expert',
       stack: ['React', 'Next.js', 'TypeScript'],
       location: 'Remote',
@@ -52,18 +53,20 @@ describe('JobEntity persistence', () => {
 
     expect(found).not.toBeNull();
     expect(found?.title).toBe('Senior React Developer');
+    expect(found?.companyLogoUrl).toBe('https://example.com/logo.png');
     expect(found?.stack).toEqual(['React', 'Next.js', 'TypeScript']);
     expect(found?.remoteType).toBe('remote');
     expect(found?.compensation).toBe('$80-100k');
     expect(found?.postedAt).toEqual(new Date('2026-08-10T00:00:00.000Z'));
   });
 
-  it('round-trips a job with null compensation and postedAt', async () => {
+  it('round-trips a job with null compensation, postedAt, and companyLogoUrl', async () => {
     const job: JobEntity = {
       id: 'def456',
       source: 'Remotive',
       title: 'NestJS Backend Engineer',
       company: 'Beta LLC',
+      companyLogoUrl: null,
       description: 'NestJS + TypeScript backend role',
       stack: ['NestJS', 'TypeScript'],
       location: 'Worldwide',
@@ -80,6 +83,7 @@ describe('JobEntity persistence', () => {
 
     expect(found?.compensation).toBeNull();
     expect(found?.postedAt).toBeNull();
+    expect(found?.companyLogoUrl).toBeNull();
   });
 
   it('composes with a FilterRule implementation against a persisted job', async () => {
@@ -88,6 +92,7 @@ describe('JobEntity persistence', () => {
       source: 'RemoteOK',
       title: 'Frontend Engineer',
       company: 'Acme Inc',
+      companyLogoUrl: null,
       description: 'React role',
       stack: ['React', 'TypeScript'],
       location: 'Remote',

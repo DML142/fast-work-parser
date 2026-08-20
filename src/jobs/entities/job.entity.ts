@@ -17,6 +17,9 @@ export class JobEntity {
   @Column()
   company: string;
 
+  @Column({ type: 'text', nullable: true })
+  companyLogoUrl: string | null;
+
   @Column('text')
   description: string;
 
