@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { getFilters, updateFilters, updateSource } from '../api';
 import { keywordsToText, textToKeywords } from '../keywordText';
 import type { FiltersState } from '../types';
@@ -14,7 +14,8 @@ export function FiltersScreen({ onClose }: FiltersScreenProps) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
+  const loadFilters = useCallback(() => {
+    setError(null);
     getFilters()
       .then((loaded) => {
         setFilters(loaded);
@@ -23,6 +24,10 @@ export function FiltersScreen({ onClose }: FiltersScreenProps) {
       })
       .catch(() => setError('Could not load filters.'));
   }, []);
+
+  useEffect(() => {
+    loadFilters();
+  }, [loadFilters]);
 
   const toggleSource = (name: string, enabled: boolean) => {
     if (!filters) {
@@ -56,6 +61,16 @@ export function FiltersScreen({ onClose }: FiltersScreenProps) {
   };
 
   if (!filters) {
+    if (error) {
+      return (
+        <div className="filters-screen__error">
+          <p>{error}</p>
+          <button type="button" onClick={loadFilters}>
+            Retry
+          </button>
+        </div>
+      );
+    }
     return <p>Loading…</p>;
   }
 
