@@ -46,8 +46,8 @@ describe('FilterService', () => {
 
   it('combines the real StackMatchRule and VisaRedFlagRule end to end', () => {
     const service = new FilterService([
-      new StackMatchRule(DEFAULT_STACK_KEYWORDS),
-      new VisaRedFlagRule(DEFAULT_VISA_RED_FLAGS),
+      new StackMatchRule(() => DEFAULT_STACK_KEYWORDS),
+      new VisaRedFlagRule(() => DEFAULT_VISA_RED_FLAGS),
     ]);
 
     const goodJob = buildJobEntity({
