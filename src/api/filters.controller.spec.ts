@@ -1,3 +1,4 @@
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { FiltersController } from './filters.controller';
 import { FilterConfigService } from '../filter/filter-config.service';
 import { SourceConfigService } from '../sources/source-config.service';
@@ -77,5 +78,71 @@ describe('FiltersController', () => {
 
     expect(setEnabled).toHaveBeenCalledWith('hh.ru', false);
     expect(result).toEqual({ name: 'hh.ru', enabled: false });
+  });
+
+  it('rejects a non-array includeKeywords without writing it through', async () => {
+    const { service: filterConfigService, updateKeywords } =
+      fakeFilterConfigService();
+    const { service: sourceConfigService } = fakeSourceConfigService();
+    const controller = new FiltersController(
+      filterConfigService,
+      sourceConfigService,
+    );
+
+    await expect(
+      controller.updateFilters({
+        includeKeywords: 'React' as unknown as string[],
+      }),
+    ).rejects.toBeInstanceOf(BadRequestException);
+    expect(updateKeywords).not.toHaveBeenCalled();
+  });
+
+  it('rejects a non-array excludeKeywords without writing it through', async () => {
+    const { service: filterConfigService, updateKeywords } =
+      fakeFilterConfigService();
+    const { service: sourceConfigService } = fakeSourceConfigService();
+    const controller = new FiltersController(
+      filterConfigService,
+      sourceConfigService,
+    );
+
+    await expect(
+      controller.updateFilters({
+        excludeKeywords: [1, 2] as unknown as string[],
+      }),
+    ).rejects.toBeInstanceOf(BadRequestException);
+    expect(updateKeywords).not.toHaveBeenCalled();
+  });
+
+  it('rejects an unknown source name without persisting a phantom row', async () => {
+    const { service: filterConfigService } = fakeFilterConfigService();
+    const { service: sourceConfigService, setEnabled } =
+      fakeSourceConfigService();
+    const controller = new FiltersController(
+      filterConfigService,
+      sourceConfigService,
+    );
+
+    await expect(
+      controller.updateSource('NotARealSource', { enabled: true }),
+    ).rejects.toBeInstanceOf(NotFoundException);
+    expect(setEnabled).not.toHaveBeenCalled();
+  });
+
+  it('rejects a non-boolean enabled flag', async () => {
+    const { service: filterConfigService } = fakeFilterConfigService();
+    const { service: sourceConfigService, setEnabled } =
+      fakeSourceConfigService();
+    const controller = new FiltersController(
+      filterConfigService,
+      sourceConfigService,
+    );
+
+    await expect(
+      controller.updateSource('hh.ru', {
+        enabled: 'yes' as unknown as boolean,
+      }),
+    ).rejects.toBeInstanceOf(BadRequestException);
+    expect(setEnabled).not.toHaveBeenCalled();
   });
 });
