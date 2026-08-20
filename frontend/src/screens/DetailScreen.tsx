@@ -1,4 +1,5 @@
 import type { Job } from '../types';
+import './DetailScreen.css';
 
 export interface DetailScreenProps {
   job: Job;

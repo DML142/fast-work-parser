@@ -6,9 +6,16 @@ export function initTelegram(): void {
   if (initialized) {
     return;
   }
-  init();
-  if (backButton.mount.isAvailable()) {
-    backButton.mount();
+  try {
+    init();
+    initData.restore();
+    if (backButton.mount.isAvailable()) {
+      backButton.mount();
+    }
+  } catch {
+    // Outside Telegram (e.g. local dev in a plain browser): leave
+    // initData empty. Every /api/* call will 401, and the app already
+    // has a dedicated "open this from Telegram" state for that.
   }
   initialized = true;
 }
@@ -28,5 +35,8 @@ export function setBackButtonVisible(visible: boolean): void {
 }
 
 export function onBackButtonClick(handler: () => void): () => void {
+  if (!backButton.onClick.isAvailable()) {
+    return () => {};
+  }
   return backButton.onClick(handler);
 }

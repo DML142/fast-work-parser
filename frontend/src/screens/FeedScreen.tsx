@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { JobCard } from '../components/JobCard';
 import { ApiError, getJobs, getParseStatus, triggerParse } from '../api';
 import type { Job, ParseStatus } from '../types';
+import './FeedScreen.css';
 
 function formatLastParsed(lastParsedAt: string | null): string {
   if (!lastParsedAt) {
@@ -59,25 +60,34 @@ export function FeedScreen({ onSelectJob, onOpenFilters }: FeedScreenProps) {
     loadParseStatus();
   }, [loadJobs, loadParseStatus]);
 
+  const cooldownActive = (parseStatus?.cooldownRemainingSeconds ?? 0) > 0;
+
+  const wasCoolingDownRef = useRef(false);
+
   useEffect(() => {
-    if (!parseStatus || parseStatus.cooldownRemainingSeconds <= 0) {
-      return;
+    if (cooldownActive) {
+      wasCoolingDownRef.current = true;
+      const timer = setInterval(() => {
+        setParseStatus((current) =>
+          current
+            ? {
+                ...current,
+                cooldownRemainingSeconds: Math.max(
+                  0,
+                  current.cooldownRemainingSeconds - 1,
+                ),
+              }
+            : current,
+        );
+      }, 1000);
+      return () => clearInterval(timer);
     }
-    const timer = setInterval(() => {
-      setParseStatus((current) =>
-        current
-          ? {
-              ...current,
-              cooldownRemainingSeconds: Math.max(
-                0,
-                current.cooldownRemainingSeconds - 1,
-              ),
-            }
-          : current,
-      );
-    }, 1000);
-    return () => clearInterval(timer);
-  }, [parseStatus]);
+    if (wasCoolingDownRef.current) {
+      wasCoolingDownRef.current = false;
+      loadParseStatus();
+      loadJobs();
+    }
+  }, [cooldownActive, loadParseStatus, loadJobs]);
 
   const handleParse = () => {
     setParseError(null);
@@ -85,7 +95,6 @@ export function FeedScreen({ onSelectJob, onOpenFilters }: FeedScreenProps) {
     triggerParse()
       .then((status) => {
         setParseStatus(status);
-        loadJobs();
       })
       .catch((error: unknown) => {
         if (error instanceof ApiError && error.status === 429) {
@@ -103,14 +112,13 @@ export function FeedScreen({ onSelectJob, onOpenFilters }: FeedScreenProps) {
       .finally(() => setTriggering(false));
   };
 
-  const cooldownActive = (parseStatus?.cooldownRemainingSeconds ?? 0) > 0;
-
   return (
     <div className="feed-screen">
       <header className="feed-screen__header">
-        <div>
+        <div className="feed-screen__parse-row">
           <button
             type="button"
+            className="feed-screen__parse-button"
             onClick={handleParse}
             disabled={triggering || cooldownActive}
           >
@@ -125,7 +133,12 @@ export function FeedScreen({ onSelectJob, onOpenFilters }: FeedScreenProps) {
             <span className="feed-screen__parse-error">{parseError}</span>
           )}
         </div>
-        <button type="button" onClick={onOpenFilters} aria-label="Filters">
+        <button
+          type="button"
+          className="feed-screen__filters-button"
+          onClick={onOpenFilters}
+          aria-label="Filters"
+        >
           ⚙
         </button>
       </header>
@@ -135,7 +148,11 @@ export function FeedScreen({ onSelectJob, onOpenFilters }: FeedScreenProps) {
       {!authError && loadError && (
         <div className="feed-screen__error">
           <p>Could not load jobs.</p>
-          <button type="button" onClick={loadJobs}>
+          <button
+            type="button"
+            className="feed-screen__retry-button"
+            onClick={loadJobs}
+          >
             Retry
           </button>
         </div>

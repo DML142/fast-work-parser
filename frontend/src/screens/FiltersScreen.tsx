@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { getFilters, updateFilters, updateSource } from '../api';
 import { keywordsToText, textToKeywords } from '../keywordText';
 import type { FiltersState } from '../types';
+import './FiltersScreen.css';
 
 export interface FiltersScreenProps {
   onClose: () => void;
@@ -63,7 +64,7 @@ export function FiltersScreen({ onClose }: FiltersScreenProps) {
   if (!filters) {
     if (error) {
       return (
-        <div className="filters-screen__error">
+        <div className="filters-screen__load-error">
           <p>{error}</p>
           <button type="button" onClick={loadFilters}>
             Retry

@@ -1,0 +1,65 @@
+.filters-screen {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.filters-screen__load-error {
+  color: var(--color-text-muted);
+}
+
+.filters-screen__error {
+  color: var(--color-danger);
+  font-size: 13px;
+}
+
+.filters-screen label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+.filters-screen textarea {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 10px;
+  color: var(--color-text);
+  min-height: 96px;
+  font: inherit;
+  resize: vertical;
+}
+
+.filters-screen__sources {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.filters-screen__sources label {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-text);
+  font-size: 14px;
+}
+
+.filters-screen button[type="button"] {
+  background: var(--color-accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius);
+  padding: 10px 16px;
+  font-weight: 600;
+  cursor: pointer;
+  align-self: flex-start;
+}
+
+.filters-screen button[type="button"]:disabled {
+  background: var(--color-border);
+  color: var(--color-text-muted);
+  cursor: default;
+}
