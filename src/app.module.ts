@@ -6,6 +6,7 @@ import { JobEntity } from './jobs/entities/job.entity';
 import { FilterConfigEntity } from './filter/entities/filter-config.entity';
 import { SourceConfigEntity } from './sources/entities/source-config.entity';
 import { SchedulerModule } from './scheduler/scheduler.module';
+import { ApiModule } from './api/api.module';
 import { AppController } from './app.controller';
 
 @Module({
@@ -19,6 +20,7 @@ import { AppController } from './app.controller';
     }),
     JobsModule,
     SchedulerModule,
+    ApiModule,
   ],
   controllers: [AppController],
 })
