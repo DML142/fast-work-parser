@@ -41,4 +41,12 @@ describe('deriveLevel', () => {
       deriveLevel('Senior to Lead Backend Engineer', 'Growth path included.'),
     ).toBe('lead');
   });
+
+  it('does not match "лид" as a prefix of an unrelated word like "лидер"', () => {
+    expect(deriveLevel('', 'Мы лидер рынка среди IT компаний')).toBeNull();
+  });
+
+  it('does not match "джун" as a prefix of an unrelated word like "джунгли"', () => {
+    expect(deriveLevel('', 'Добро пожаловать в джунгли стартапов')).toBeNull();
+  });
 });
