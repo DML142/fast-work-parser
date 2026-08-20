@@ -28,8 +28,13 @@ export class StackMatchRule implements FilterRule {
   // job.stack is intentionally excluded: some sources (e.g. RemoteOK) sometimes return a
   // generic site-wide tag list instead of per-job tags, making it an unreliable match source.
   matches(job: JobEntity): boolean {
+    const keywords = this.getKeywords();
+    // An empty list means "no stack restriction", not "reject everything".
+    if (keywords.length === 0) {
+      return true;
+    }
     const haystack = [job.title, job.description].join(' ');
-    return this.getKeywords().some((keyword) =>
+    return keywords.some((keyword) =>
       new RegExp(`\\b${escapeRegExp(keyword)}\\b`, 'i').test(haystack),
     );
   }

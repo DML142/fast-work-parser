@@ -96,6 +96,18 @@ describe('StackMatchRule', () => {
     expect(rule.matches(job)).toBe(true);
   });
 
+  it('treats an empty keyword list as no restriction rather than rejecting everything', () => {
+    const rule = new StackMatchRule(() => []);
+    const job = buildJobEntity({
+      title: 'Backend Java Engineer',
+      description: 'Looking for a Java and Spring Boot expert.',
+      stack: [],
+    });
+
+    expect(rule.matches(job)).toBe(true);
+    expect(rule.matches(buildJobEntity())).toBe(true);
+  });
+
   it('reflects a change in what the getter returns between calls', () => {
     let keywords: readonly string[] = ['Rust'];
     const rule = new StackMatchRule(() => keywords);

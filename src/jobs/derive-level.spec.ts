@@ -28,6 +28,11 @@ describe('deriveLevel', () => {
     expect(deriveLevel('', 'Ищем лида команды')).toBe('lead');
   });
 
+  it('detects "тимлид" and "техлид", including inflected forms', () => {
+    expect(deriveLevel('', 'Ищем тимлида в команду')).toBe('lead');
+    expect(deriveLevel('', 'Требуется техлид на проект')).toBe('lead');
+  });
+
   it('returns null when no seniority keyword is present', () => {
     expect(deriveLevel('React Developer', 'Build great products.')).toBeNull();
   });
