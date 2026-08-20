@@ -1,5 +1,5 @@
 import { createHmac } from 'node:crypto';
-import { ExecutionContext } from '@nestjs/common';
+import { ExecutionContext, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { TelegramInitDataGuard } from './telegram-init-data.guard';
 
@@ -113,5 +113,47 @@ describe('TelegramInitDataGuard', () => {
     });
 
     expect(() => guard.canActivate(contextWithHeader(stale))).toThrow();
+  });
+
+  function guardForChat(): TelegramInitDataGuard {
+    return new TelegramInitDataGuard(
+      fakeConfigService({
+        TELEGRAM_BOT_TOKEN: botToken,
+        TELEGRAM_CHAT_ID: chatId,
+      }),
+    );
+  }
+
+  it('accepts a Bot API 8.0+ payload whose hash covers the signature param', () => {
+    const initData = validInitData({ signature: 'ed25519-signature-value' });
+
+    expect(guardForChat().canActivate(contextWithHeader(initData))).toBe(true);
+  });
+
+  it('accepts a Bot API 8.0+ payload whose hash excludes the signature param', () => {
+    const initData = `${validInitData()}&signature=${encodeURIComponent(
+      'ed25519-signature-value',
+    )}`;
+
+    expect(guardForChat().canActivate(contextWithHeader(initData))).toBe(true);
+  });
+
+  it('rejects a validly signed payload carrying malformed user JSON', () => {
+    const initData = validInitData({ user: 'not-json' });
+
+    expect(() =>
+      guardForChat().canActivate(contextWithHeader(initData)),
+    ).toThrow(UnauthorizedException);
+  });
+
+  it('rejects a non-hex hash without a crypto length error', () => {
+    const initData = validInitData().replace(
+      /hash=[^&]+/,
+      `hash=${'z'.repeat(64)}`,
+    );
+
+    expect(() =>
+      guardForChat().canActivate(contextWithHeader(initData)),
+    ).toThrow(UnauthorizedException);
   });
 });
