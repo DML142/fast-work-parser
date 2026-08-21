@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { SchedulerService } from '../scheduler/scheduler.service';
 import {
-  ParseActivityEntry,
+  ParseSourceActivity,
   ParseActivityLog,
 } from '../scheduler/parse-activity-log';
 import { FilterConfigService } from '../filter/filter-config.service';
@@ -21,7 +21,7 @@ interface ParseStatusResponse {
   lastParsedAt: string | null;
   cooldownRemainingSeconds: number;
   parsing: boolean;
-  activity: ParseActivityEntry[];
+  sources: ParseSourceActivity[];
 }
 
 @UseGuards(TelegramInitDataGuard)
@@ -38,13 +38,13 @@ export class ParseController {
 
   @Get('status')
   status(): ParseStatusResponse {
-    const { parsing, activity } = this.parseActivityLog.snapshot();
+    const { parsing, sources } = this.parseActivityLog.snapshot();
     return {
       lastParsedAt:
         this.filterConfigService.lastParsedAt?.toISOString() ?? null,
       cooldownRemainingSeconds: this.cooldownTracker.remainingSeconds(),
       parsing,
-      activity,
+      sources,
     };
   }
 

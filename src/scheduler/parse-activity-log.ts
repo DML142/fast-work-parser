@@ -1,21 +1,26 @@
 import { Injectable } from '@nestjs/common';
 
-export interface ParseActivityEntry {
+export type ParseSourceStatus = 'fetching' | 'done' | 'failed';
+
+export interface ParseSourceActivity {
   source: string;
-  message: string;
+  status: ParseSourceStatus;
+  jobCount: number;
+  lastJobTitle: string | null;
 }
 
-const MAX_ENTRIES = 50;
-
 // In-memory only: this is a "what's happening right now" view for the mini app
-// while a parse run is in flight, not a persisted audit log.
+// while a parse run is in flight, not a persisted audit log. Grouped per source
+// (rather than one flat list) so a source with many jobs can't push another
+// source's progress out of view, and so the mini app can render one line per
+// source instead of a long, hard-to-scan job-title transcript.
 @Injectable()
 export class ParseActivityLog {
-  private entries: ParseActivityEntry[] = [];
+  private sources = new Map<string, ParseSourceActivity>();
   private running = false;
 
   start(): void {
-    this.entries = [];
+    this.sources = new Map();
     this.running = true;
   }
 
@@ -23,14 +28,42 @@ export class ParseActivityLog {
     this.running = false;
   }
 
-  record(source: string, message: string): void {
-    this.entries.push({ source, message });
-    if (this.entries.length > MAX_ENTRIES) {
-      this.entries = this.entries.slice(-MAX_ENTRIES);
+  startSource(source: string): void {
+    this.sources.set(source, {
+      source,
+      status: 'fetching',
+      jobCount: 0,
+      lastJobTitle: null,
+    });
+  }
+
+  recordJob(source: string, title: string): void {
+    const entry = this.sources.get(source);
+    if (!entry) {
+      return;
+    }
+    entry.jobCount += 1;
+    entry.lastJobTitle = title;
+  }
+
+  finishSource(source: string): void {
+    const entry = this.sources.get(source);
+    if (entry) {
+      entry.status = 'done';
     }
   }
 
-  snapshot(): { parsing: boolean; activity: ParseActivityEntry[] } {
-    return { parsing: this.running, activity: [...this.entries] };
+  failSource(source: string): void {
+    const entry = this.sources.get(source);
+    if (entry) {
+      entry.status = 'failed';
+    }
+  }
+
+  snapshot(): { parsing: boolean; sources: ParseSourceActivity[] } {
+    return {
+      parsing: this.running,
+      sources: [...this.sources.values()].map((entry) => ({ ...entry })),
+    };
   }
 }

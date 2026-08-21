@@ -2,9 +2,9 @@ import { Test } from '@nestjs/testing';
 import { HttpService } from '@nestjs/axios';
 import { of, throwError } from 'rxjs';
 import { AxiosResponse } from 'axios';
-import { DjinniAdapter } from './djinni.adapter';
+import { DjinniAdapter, DJINNI_JOBS_URL } from './djinni.adapter';
 
-const LISTING_URL = 'https://djinni.co/jobs/';
+const LISTING_URL = DJINNI_JOBS_URL;
 const DETAIL_URL = 'https://djinni.co/jobs/843917-senior-react-developer/';
 
 const LISTING_HTML = `

@@ -69,16 +69,25 @@ function fakeFilterConfigService(): {
 function fakeParseActivityLog(): ParseActivityLog & {
   start: jest.Mock;
   finish: jest.Mock;
-  record: jest.Mock;
+  startSource: jest.Mock;
+  recordJob: jest.Mock;
+  finishSource: jest.Mock;
+  failSource: jest.Mock;
 } {
   return {
     start: jest.fn(),
     finish: jest.fn(),
-    record: jest.fn(),
+    startSource: jest.fn(),
+    recordJob: jest.fn(),
+    finishSource: jest.fn(),
+    failSource: jest.fn(),
   } as unknown as ParseActivityLog & {
     start: jest.Mock;
     finish: jest.Mock;
-    record: jest.Mock;
+    startSource: jest.Mock;
+    recordJob: jest.Mock;
+    finishSource: jest.Mock;
+    failSource: jest.Mock;
   };
 }
 
@@ -262,18 +271,20 @@ describe('SchedulerService', () => {
     expect(parseActivityLog.start).toHaveBeenCalled();
     // eslint-disable-next-line @typescript-eslint/unbound-method -- these are jest mocks, not bound methods
     expect(parseActivityLog.finish).toHaveBeenCalled();
-    const messages = parseActivityLog.record.mock.calls.map(
+    // eslint-disable-next-line @typescript-eslint/unbound-method -- this is a jest mock, not a bound method
+    expect(parseActivityLog.startSource).toHaveBeenCalledWith('A');
+    const jobTitles = parseActivityLog.recordJob.mock.calls.map(
       (call: unknown[]) => call[1],
     );
-    expect(messages).toEqual([
-      'Fetching A…',
+    expect(jobTitles).toEqual([
       'Senior Full-Stack Developer',
       'Senior Full-Stack Developer',
-      'Found 2 job(s)',
     ]);
+    // eslint-disable-next-line @typescript-eslint/unbound-method -- this is a jest mock, not a bound method
+    expect(parseActivityLog.finishSource).toHaveBeenCalledWith('A');
   });
 
-  it('records a failure message in the activity log when a source fetch fails', async () => {
+  it('marks the source as failed in the activity log when its fetch fails', async () => {
     const failingSource: NormalizingJobSource = {
       name: 'Failing',
       fetchJobs: jest.fn().mockRejectedValue(new Error('network down')),
@@ -296,10 +307,7 @@ describe('SchedulerService', () => {
     await service.runPipeline();
 
     // eslint-disable-next-line @typescript-eslint/unbound-method -- this is a jest mock, not a bound method
-    expect(parseActivityLog.record).toHaveBeenCalledWith(
-      'Failing',
-      'Failed to fetch jobs from this source',
-    );
+    expect(parseActivityLog.failSource).toHaveBeenCalledWith('Failing');
     // eslint-disable-next-line @typescript-eslint/unbound-method -- this is a jest mock, not a bound method
     expect(parseActivityLog.finish).toHaveBeenCalled();
   });

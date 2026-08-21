@@ -49,27 +49,21 @@ export class SchedulerService {
 
     const results = await Promise.all(
       enabledSources.map(async (source) => {
-        this.parseActivityLog.record(source.name, `Fetching ${source.name}…`);
+        this.parseActivityLog.startSource(source.name);
         try {
           const rawJobs = await source.fetchJobs();
           const normalized = rawJobs.map((raw) => source.normalize(raw));
           for (const job of normalized) {
-            this.parseActivityLog.record(source.name, job.title);
+            this.parseActivityLog.recordJob(source.name, job.title);
           }
-          this.parseActivityLog.record(
-            source.name,
-            `Found ${normalized.length} job(s)`,
-          );
+          this.parseActivityLog.finishSource(source.name);
           return normalized;
         } catch (error) {
           this.logger.error(
             `Failed to fetch jobs from ${source.name}`,
             error as Error,
           );
-          this.parseActivityLog.record(
-            source.name,
-            'Failed to fetch jobs from this source',
-          );
+          this.parseActivityLog.failSource(source.name);
           return [];
         }
       }),

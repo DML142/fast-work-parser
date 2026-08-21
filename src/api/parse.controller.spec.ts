@@ -1,7 +1,10 @@
 import { HttpException, HttpStatus, Logger } from '@nestjs/common';
 import { ParseController } from './parse.controller';
 import { SchedulerService } from '../scheduler/scheduler.service';
-import { ParseActivityLog } from '../scheduler/parse-activity-log';
+import {
+  ParseActivityLog,
+  ParseSourceActivity,
+} from '../scheduler/parse-activity-log';
 import { FilterConfigService } from '../filter/filter-config.service';
 import { ParseCooldownTracker } from './parse-cooldown.tracker';
 
@@ -37,13 +40,13 @@ function fakeCooldownTracker(overrides: {
 function fakeParseActivityLog(
   overrides: {
     parsing?: boolean;
-    activity?: { source: string; message: string }[];
+    sources?: ParseSourceActivity[];
   } = {},
 ): ParseActivityLog {
   return {
     snapshot: jest.fn().mockReturnValue({
       parsing: overrides.parsing ?? false,
-      activity: overrides.activity ?? [],
+      sources: overrides.sources ?? [],
     }),
   } as unknown as ParseActivityLog;
 }
@@ -57,7 +60,14 @@ describe('ParseController', () => {
       fakeCooldownTracker({ remainingSeconds: 15 }),
       fakeParseActivityLog({
         parsing: true,
-        activity: [{ source: 'hh.ru', message: 'Fetching hh.ru…' }],
+        sources: [
+          {
+            source: 'hh.ru',
+            status: 'fetching',
+            jobCount: 0,
+            lastJobTitle: null,
+          },
+        ],
       }),
     );
 
@@ -65,7 +75,14 @@ describe('ParseController', () => {
       lastParsedAt: '2026-08-20T12:00:00.000Z',
       cooldownRemainingSeconds: 15,
       parsing: true,
-      activity: [{ source: 'hh.ru', message: 'Fetching hh.ru…' }],
+      sources: [
+        {
+          source: 'hh.ru',
+          status: 'fetching',
+          jobCount: 0,
+          lastJobTitle: null,
+        },
+      ],
     });
   });
 
@@ -140,7 +157,7 @@ describe('ParseController', () => {
       lastParsedAt: '2026-08-20T12:00:00.000Z',
       cooldownRemainingSeconds: 60,
       parsing: true,
-      activity: [],
+      sources: [],
     });
 
     finishPipeline();

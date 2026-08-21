@@ -89,23 +89,27 @@
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius);
-  max-height: 140px;
-  overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 }
 
 .feed-screen__activity-item {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
   font-size: 12px;
+}
+
+.feed-screen__activity-source {
+  flex-shrink: 0;
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+.feed-screen__activity-detail {
   color: var(--color-text-muted);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.feed-screen__activity-source {
-  color: var(--color-text);
-  font-weight: 600;
-  margin-right: 6px;
 }

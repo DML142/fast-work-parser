@@ -31,14 +31,18 @@ export interface FiltersState {
   sources: SourceStatus[];
 }
 
-export interface ParseActivityEntry {
+export type ParseSourceStatus = 'fetching' | 'done' | 'failed';
+
+export interface ParseSourceActivity {
   source: string;
-  message: string;
+  status: ParseSourceStatus;
+  jobCount: number;
+  lastJobTitle: string | null;
 }
 
 export interface ParseStatus {
   lastParsedAt: string | null;
   cooldownRemainingSeconds: number;
   parsing: boolean;
-  activity: ParseActivityEntry[];
+  sources: ParseSourceActivity[];
 }

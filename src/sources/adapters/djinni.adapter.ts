@@ -7,7 +7,13 @@ import {
   RawJob,
 } from '../../common/interfaces/job-source.interface';
 
-const DJINNI_JOBS_URL = 'https://djinni.co/jobs/';
+// Rough query-side narrowing only — the real hard filter is StackMatchRule downstream.
+// Without this, /jobs/ serves Djinni's entire unfiltered firehose (sales, marketing,
+// analyst roles included), and almost none of it survives the stack-match filter.
+const DJINNI_PRIMARY_KEYWORDS = ['React.js', 'Node.js', 'JavaScript'];
+export const DJINNI_JOBS_URL = `https://djinni.co/jobs/?${DJINNI_PRIMARY_KEYWORDS.map(
+  (keyword) => `primary_keyword=${encodeURIComponent(keyword)}`,
+).join('&')}`;
 
 @Injectable()
 export class DjinniAdapter implements JobSource {

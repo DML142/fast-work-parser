@@ -93,7 +93,7 @@ export function FeedScreen({ onSelectJob, onOpenFilters }: FeedScreenProps) {
   // sequentially and can be slow), so keep polling for progress while either
   // the cooldown or the pipeline itself is still active.
   const parsingActive = cooldownActive || (parseStatus?.parsing ?? false);
-  const activity = parseStatus?.activity ?? [];
+  const sourcesActivity = parseStatus?.sources ?? [];
 
   useEffect(() => {
     if (!parsingActive) {
@@ -119,7 +119,7 @@ export function FeedScreen({ onSelectJob, onOpenFilters }: FeedScreenProps) {
             lastParsedAt: current?.lastParsedAt ?? null,
             cooldownRemainingSeconds: body?.cooldownRemainingSeconds ?? 60,
             parsing: current?.parsing ?? false,
-            activity: current?.activity ?? [],
+            sources: current?.sources ?? [],
           }));
         } else {
           setParseError('Could not start a parse run.');
@@ -158,14 +158,24 @@ export function FeedScreen({ onSelectJob, onOpenFilters }: FeedScreenProps) {
           ⚙
         </button>
       </header>
-      {parsingActive && activity.length > 0 && (
+      {parsingActive && sourcesActivity.length > 0 && (
         <ul className="feed-screen__activity">
-          {activity.map((entry, index) => (
-            <li key={index} className="feed-screen__activity-item">
+          {sourcesActivity.map((entry) => (
+            <li key={entry.source} className="feed-screen__activity-item">
               <span className="feed-screen__activity-source">
                 {entry.source}
               </span>
-              {entry.message}
+              <span className="feed-screen__activity-detail">
+                {entry.status === 'failed'
+                  ? 'failed'
+                  : entry.status === 'fetching'
+                    ? entry.jobCount > 0
+                      ? `${entry.jobCount} so far…`
+                      : 'fetching…'
+                    : `${entry.jobCount} job${entry.jobCount === 1 ? '' : 's'}${
+                        entry.lastJobTitle ? ` — ${entry.lastJobTitle}` : ''
+                      }`}
+              </span>
             </li>
           ))}
         </ul>
