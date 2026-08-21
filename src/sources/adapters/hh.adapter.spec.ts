@@ -13,6 +13,7 @@ const LISTING_HTML = `
       <span data-qa="serp-item__title-text">Senior Frontend Developer (React)</span>
     </a>
     <div data-qa="vacancy-label-work-schedule-remote">Можно удалённо</div>
+    <img data-qa="vacancy-serp__vacancy-employer-logo-image-small" src="https://img.hhcdn.ru/employer-logo-round/6647499.jpeg" alt="" />
     <a data-qa="vacancy-serp__vacancy-employer" href="#">
       <span data-qa="vacancy-serp__vacancy-employer-text">ООО Рога и Копыта</span>
     </a>
@@ -65,11 +66,31 @@ describe('HhAdapter', () => {
       title: 'Senior Frontend Developer (React)',
       company: 'ООО Рога и Копыта',
       href: DETAIL_URL,
+      logoUrl: 'https://img.hhcdn.ru/employer-logo-round/6647499.jpeg',
       location: 'Москва',
       isRemote: true,
       description:
         'We are looking for a Senior Frontend Developer with React experience.',
     });
+  });
+
+  it('omits logoUrl when a listing has no employer logo image', async () => {
+    const listingWithoutLogo = LISTING_HTML.replace(
+      /<img data-qa="vacancy-serp__vacancy-employer-logo-image-small"[^>]*\/>\s*/,
+      '',
+    );
+    const httpService = {
+      get: jest.fn((url: string) =>
+        url.startsWith('https://hh.ru/search/vacancy')
+          ? respond(listingWithoutLogo)
+          : respond(DETAIL_HTML),
+      ),
+    };
+
+    const adapter = await createAdapter(httpService);
+    const jobs = await adapter.fetchJobs();
+
+    expect(jobs[0].logoUrl).toBeUndefined();
   });
 
   it('falls back to an empty description when a detail-page fetch fails', async () => {

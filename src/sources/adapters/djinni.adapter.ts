@@ -39,6 +39,10 @@ export class DjinniAdapter implements JobSource {
             .text()
             .trim(),
           href: href ? new URL(href, DJINNI_JOBS_URL).toString() : '',
+          logoUrl: card
+            .find('.userpic-wrapper img.userpic-image')
+            .first()
+            .attr('src'),
           location: card.find('.location-text').first().text().trim(),
           // The listing page only renders a ~500-char truncated snippet;
           // fetchFullDescription replaces it with the real description below.

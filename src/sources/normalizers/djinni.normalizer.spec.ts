@@ -7,6 +7,8 @@ describe('normalizeDjinniJob', () => {
       title: 'Senior React Developer',
       company: 'N-iX',
       href: 'https://djinni.co/jobs/843917-senior-react-developer/',
+      logoUrl:
+        'https://p.djinni.co/d0/32704adcab409c12bdab3238166b61/360x160.png',
       location: 'Україна',
       description: 'We are looking for a Senior React Developer...',
     };
@@ -16,7 +18,9 @@ describe('normalizeDjinniJob', () => {
     expect(job.source).toBe('Djinni');
     expect(job.title).toBe('Senior React Developer');
     expect(job.company).toBe('N-iX');
-    expect(job.companyLogoUrl).toBeNull();
+    expect(job.companyLogoUrl).toBe(
+      'https://p.djinni.co/d0/32704adcab409c12bdab3238166b61/360x160.png',
+    );
     expect(job.description).toBe(
       'We are looking for a Senior React Developer...',
     );
@@ -43,5 +47,17 @@ describe('normalizeDjinniJob', () => {
     };
 
     expect(normalizeDjinniJob(raw).location).toBe('Remote');
+  });
+
+  it('leaves the logo null when no logoUrl was scraped', () => {
+    const raw: RawJob = {
+      title: 'Backend Developer',
+      company: 'Acme',
+      href: 'https://djinni.co/jobs/1-backend-developer/',
+      location: '',
+      description: '',
+    };
+
+    expect(normalizeDjinniJob(raw).companyLogoUrl).toBeNull();
   });
 });

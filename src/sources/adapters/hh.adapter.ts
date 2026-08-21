@@ -64,6 +64,10 @@ export class HhAdapter implements JobSource {
             .text()
             .trim(),
           href: href ? href.split('?')[0] : '',
+          logoUrl: card
+            .find('[data-qa="vacancy-serp__vacancy-employer-logo-image-small"]')
+            .first()
+            .attr('src'),
           location: card
             .find('[data-qa="vacancy-serp__vacancy-address"]')
             .first()

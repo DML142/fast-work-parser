@@ -89,6 +89,20 @@ export function FeedScreen({ onSelectJob, onOpenFilters }: FeedScreenProps) {
     }
   }, [cooldownActive, loadParseStatus, loadJobs]);
 
+  // A run can outlast the fixed cooldown window (hh.ru in particular fetches
+  // sequentially and can be slow), so keep polling for progress while either
+  // the cooldown or the pipeline itself is still active.
+  const parsingActive = cooldownActive || (parseStatus?.parsing ?? false);
+  const activity = parseStatus?.activity ?? [];
+
+  useEffect(() => {
+    if (!parsingActive) {
+      return;
+    }
+    const timer = setInterval(loadParseStatus, 2000);
+    return () => clearInterval(timer);
+  }, [parsingActive, loadParseStatus]);
+
   const handleParse = () => {
     setParseError(null);
     setTriggering(true);
@@ -104,6 +118,8 @@ export function FeedScreen({ onSelectJob, onOpenFilters }: FeedScreenProps) {
           setParseStatus((current) => ({
             lastParsedAt: current?.lastParsedAt ?? null,
             cooldownRemainingSeconds: body?.cooldownRemainingSeconds ?? 60,
+            parsing: current?.parsing ?? false,
+            activity: current?.activity ?? [],
           }));
         } else {
           setParseError('Could not start a parse run.');
@@ -142,6 +158,18 @@ export function FeedScreen({ onSelectJob, onOpenFilters }: FeedScreenProps) {
           ⚙
         </button>
       </header>
+      {parsingActive && activity.length > 0 && (
+        <ul className="feed-screen__activity">
+          {activity.map((entry, index) => (
+            <li key={index} className="feed-screen__activity-item">
+              <span className="feed-screen__activity-source">
+                {entry.source}
+              </span>
+              {entry.message}
+            </li>
+          ))}
+        </ul>
+      )}
       {authError && (
         <p className="feed-screen__auth-error">Open this from Telegram.</p>
       )}

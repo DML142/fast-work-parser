@@ -6,14 +6,14 @@ import { readString } from '../../common/read-string';
 export function normalizeDjinniJob(raw: RawJob): JobEntity {
   const sourceUrl = readString(raw.href);
   const location = readString(raw.location).trim();
+  const companyLogoUrl = readString(raw.logoUrl);
 
   return {
     id: hashSourceUrl(sourceUrl),
     source: 'Djinni',
     title: readString(raw.title),
     company: readString(raw.company),
-    // Djinni's listing page doesn't expose a logo URL.
-    companyLogoUrl: null,
+    companyLogoUrl: companyLogoUrl !== '' ? companyLogoUrl : null,
     description: readString(raw.description),
     stack: [],
     location: location !== '' ? location : 'Remote',

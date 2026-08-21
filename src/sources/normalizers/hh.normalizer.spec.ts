@@ -7,6 +7,7 @@ describe('normalizeHhJob', () => {
       title: 'Senior Frontend Developer (React)',
       company: 'ООО Рога и Копыта',
       href: 'https://hh.ru/vacancy/136400949',
+      logoUrl: 'https://img.hhcdn.ru/employer-logo-round/6647499.jpeg',
       location: 'Москва',
       description:
         'We are looking for a Senior Frontend Developer with React experience.',
@@ -18,7 +19,9 @@ describe('normalizeHhJob', () => {
     expect(job.source).toBe('hh.ru');
     expect(job.title).toBe('Senior Frontend Developer (React)');
     expect(job.company).toBe('ООО Рога и Копыта');
-    expect(job.companyLogoUrl).toBeNull();
+    expect(job.companyLogoUrl).toBe(
+      'https://img.hhcdn.ru/employer-logo-round/6647499.jpeg',
+    );
     expect(job.description).toBe(
       'We are looking for a Senior Frontend Developer with React experience.',
     );
@@ -47,5 +50,6 @@ describe('normalizeHhJob', () => {
 
     expect(job.location).toBe('Remote');
     expect(job.remoteType).toBe('unknown');
+    expect(job.companyLogoUrl).toBeNull();
   });
 });

@@ -9,6 +9,10 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { SchedulerService } from '../scheduler/scheduler.service';
+import {
+  ParseActivityEntry,
+  ParseActivityLog,
+} from '../scheduler/parse-activity-log';
 import { FilterConfigService } from '../filter/filter-config.service';
 import { ParseCooldownTracker } from './parse-cooldown.tracker';
 import { TelegramInitDataGuard } from './telegram-init-data.guard';
@@ -16,6 +20,8 @@ import { TelegramInitDataGuard } from './telegram-init-data.guard';
 interface ParseStatusResponse {
   lastParsedAt: string | null;
   cooldownRemainingSeconds: number;
+  parsing: boolean;
+  activity: ParseActivityEntry[];
 }
 
 @UseGuards(TelegramInitDataGuard)
@@ -27,14 +33,18 @@ export class ParseController {
     private readonly schedulerService: SchedulerService,
     private readonly filterConfigService: FilterConfigService,
     private readonly cooldownTracker: ParseCooldownTracker,
+    private readonly parseActivityLog: ParseActivityLog,
   ) {}
 
   @Get('status')
   status(): ParseStatusResponse {
+    const { parsing, activity } = this.parseActivityLog.snapshot();
     return {
       lastParsedAt:
         this.filterConfigService.lastParsedAt?.toISOString() ?? null,
       cooldownRemainingSeconds: this.cooldownTracker.remainingSeconds(),
+      parsing,
+      activity,
     };
   }
 

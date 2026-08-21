@@ -5,6 +5,7 @@ import { FilterModule } from '../filter/filter.module';
 import { PersistenceModule } from '../persistence/persistence.module';
 import { NotifierModule } from '../notifier/notifier.module';
 import { SchedulerService } from './scheduler.service';
+import { ParseActivityLog } from './parse-activity-log';
 
 @Module({
   imports: [
@@ -14,7 +15,7 @@ import { SchedulerService } from './scheduler.service';
     PersistenceModule,
     NotifierModule,
   ],
-  providers: [SchedulerService],
-  exports: [SchedulerService],
+  providers: [SchedulerService, ParseActivityLog],
+  exports: [SchedulerService, ParseActivityLog],
 })
 export class SchedulerModule {}

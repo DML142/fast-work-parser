@@ -1,6 +1,7 @@
 import { HttpException, HttpStatus, Logger } from '@nestjs/common';
 import { ParseController } from './parse.controller';
 import { SchedulerService } from '../scheduler/scheduler.service';
+import { ParseActivityLog } from '../scheduler/parse-activity-log';
 import { FilterConfigService } from '../filter/filter-config.service';
 import { ParseCooldownTracker } from './parse-cooldown.tracker';
 
@@ -33,18 +34,38 @@ function fakeCooldownTracker(overrides: {
   } as unknown as ParseCooldownTracker;
 }
 
+function fakeParseActivityLog(
+  overrides: {
+    parsing?: boolean;
+    activity?: { source: string; message: string }[];
+  } = {},
+): ParseActivityLog {
+  return {
+    snapshot: jest.fn().mockReturnValue({
+      parsing: overrides.parsing ?? false,
+      activity: overrides.activity ?? [],
+    }),
+  } as unknown as ParseActivityLog;
+}
+
 describe('ParseController', () => {
-  it('reports last parsed time and cooldown remaining on status', () => {
+  it('reports last parsed time, cooldown remaining, and current activity on status', () => {
     const { service: schedulerService } = fakeSchedulerService();
     const controller = new ParseController(
       schedulerService,
       fakeFilterConfigService(new Date('2026-08-20T12:00:00.000Z')),
       fakeCooldownTracker({ remainingSeconds: 15 }),
+      fakeParseActivityLog({
+        parsing: true,
+        activity: [{ source: 'hh.ru', message: 'Fetching hh.ru…' }],
+      }),
     );
 
     expect(controller.status()).toEqual({
       lastParsedAt: '2026-08-20T12:00:00.000Z',
       cooldownRemainingSeconds: 15,
+      parsing: true,
+      activity: [{ source: 'hh.ru', message: 'Fetching hh.ru…' }],
     });
   });
 
@@ -54,6 +75,7 @@ describe('ParseController', () => {
       schedulerService,
       fakeFilterConfigService(null),
       fakeCooldownTracker({ remainingSeconds: 0 }),
+      fakeParseActivityLog(),
     );
 
     expect(controller.status().lastParsedAt).toBeNull();
@@ -65,6 +87,7 @@ describe('ParseController', () => {
       schedulerService,
       fakeFilterConfigService(null),
       fakeCooldownTracker({ tryAcquire: true }),
+      fakeParseActivityLog(),
     );
 
     controller.trigger();
@@ -78,6 +101,7 @@ describe('ParseController', () => {
       schedulerService,
       fakeFilterConfigService(null),
       fakeCooldownTracker({ tryAcquire: false, remainingSeconds: 42 }),
+      fakeParseActivityLog(),
     );
 
     try {
@@ -106,6 +130,7 @@ describe('ParseController', () => {
       { runPipeline } as unknown as SchedulerService,
       fakeFilterConfigService(new Date('2026-08-20T12:00:00.000Z')),
       fakeCooldownTracker({ tryAcquire: true, remainingSeconds: 60 }),
+      fakeParseActivityLog({ parsing: true }),
     );
 
     const response = controller.trigger();
@@ -114,6 +139,8 @@ describe('ParseController', () => {
     expect(response).toEqual({
       lastParsedAt: '2026-08-20T12:00:00.000Z',
       cooldownRemainingSeconds: 60,
+      parsing: true,
+      activity: [],
     });
 
     finishPipeline();
@@ -128,6 +155,7 @@ describe('ParseController', () => {
       { runPipeline } as unknown as SchedulerService,
       fakeFilterConfigService(null),
       fakeCooldownTracker({ tryAcquire: true }),
+      fakeParseActivityLog(),
     );
     const logError = jest
       .spyOn(Logger.prototype, 'error')

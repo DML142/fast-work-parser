@@ -81,3 +81,31 @@
   display: flex;
   flex-direction: column;
 }
+
+.feed-screen__activity {
+  list-style: none;
+  margin: 0 0 16px;
+  padding: 10px 12px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  max-height: 140px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.feed-screen__activity-item {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.feed-screen__activity-source {
+  color: var(--color-text);
+  font-weight: 600;
+  margin-right: 6px;
+}

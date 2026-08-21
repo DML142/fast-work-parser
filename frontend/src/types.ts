@@ -31,7 +31,14 @@ export interface FiltersState {
   sources: SourceStatus[];
 }
 
+export interface ParseActivityEntry {
+  source: string;
+  message: string;
+}
+
 export interface ParseStatus {
   lastParsedAt: string | null;
   cooldownRemainingSeconds: number;
+  parsing: boolean;
+  activity: ParseActivityEntry[];
 }

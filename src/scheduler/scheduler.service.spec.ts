@@ -5,6 +5,7 @@ import { PersistenceService } from '../persistence/persistence.service';
 import { NotifierService } from '../notifier/notifier.service';
 import { SourceConfigService } from '../sources/source-config.service';
 import { FilterConfigService } from '../filter/filter-config.service';
+import { ParseActivityLog } from './parse-activity-log';
 import { buildJobEntity } from '../common/testing/job-entity.fixture';
 import { JobEntity } from '../jobs/entities/job.entity';
 
@@ -65,6 +66,22 @@ function fakeFilterConfigService(): {
   };
 }
 
+function fakeParseActivityLog(): ParseActivityLog & {
+  start: jest.Mock;
+  finish: jest.Mock;
+  record: jest.Mock;
+} {
+  return {
+    start: jest.fn(),
+    finish: jest.fn(),
+    record: jest.fn(),
+  } as unknown as ParseActivityLog & {
+    start: jest.Mock;
+    finish: jest.Mock;
+    record: jest.Mock;
+  };
+}
+
 describe('SchedulerService', () => {
   it('fetches, normalizes, and flattens jobs from every enabled source', async () => {
     const sourceA = fakeSource('A', ['a1', 'a2']);
@@ -79,6 +96,7 @@ describe('SchedulerService', () => {
       notifierService,
       fakeSourceConfigService(),
       filterConfigService,
+      fakeParseActivityLog(),
     );
 
     await service.runPipeline();
@@ -104,6 +122,7 @@ describe('SchedulerService', () => {
       notifierService,
       fakeSourceConfigService(),
       filterConfigService,
+      fakeParseActivityLog(),
     );
 
     await service.runPipeline();
@@ -125,6 +144,7 @@ describe('SchedulerService', () => {
       notifierService,
       fakeSourceConfigService(),
       filterConfigService,
+      fakeParseActivityLog(),
     );
 
     await service.runPipeline();
@@ -148,6 +168,7 @@ describe('SchedulerService', () => {
       notifierService,
       fakeSourceConfigService(),
       filterConfigService,
+      fakeParseActivityLog(),
     );
 
     await service.runPipeline();
@@ -166,6 +187,7 @@ describe('SchedulerService', () => {
       notifierService,
       fakeSourceConfigService(),
       filterConfigService,
+      fakeParseActivityLog(),
     );
 
     await service.runPipeline();
@@ -187,6 +209,7 @@ describe('SchedulerService', () => {
       notifierService,
       fakeSourceConfigService(['B']),
       filterConfigService,
+      fakeParseActivityLog(),
     );
 
     await service.runPipeline();
@@ -209,10 +232,75 @@ describe('SchedulerService', () => {
       notifierService,
       fakeSourceConfigService(),
       filterConfigService,
+      fakeParseActivityLog(),
     );
 
     await service.runPipeline();
 
     expect(recordParseRun).toHaveBeenCalled();
+  });
+
+  it('records per-source progress and each fetched job title in the activity log', async () => {
+    const source = fakeSource('A', ['a1', 'a2']);
+    const { persistenceService } = fakePersistenceService();
+    const { notifierService } = fakeNotifierService();
+    const { filterConfigService } = fakeFilterConfigService();
+    const parseActivityLog = fakeParseActivityLog();
+    const service = new SchedulerService(
+      [source],
+      fakeFilterService(),
+      persistenceService,
+      notifierService,
+      fakeSourceConfigService(),
+      filterConfigService,
+      parseActivityLog,
+    );
+
+    await service.runPipeline();
+
+    // eslint-disable-next-line @typescript-eslint/unbound-method -- these are jest mocks, not bound methods
+    expect(parseActivityLog.start).toHaveBeenCalled();
+    // eslint-disable-next-line @typescript-eslint/unbound-method -- these are jest mocks, not bound methods
+    expect(parseActivityLog.finish).toHaveBeenCalled();
+    const messages = parseActivityLog.record.mock.calls.map(
+      (call: unknown[]) => call[1],
+    );
+    expect(messages).toEqual([
+      'Fetching A…',
+      'Senior Full-Stack Developer',
+      'Senior Full-Stack Developer',
+      'Found 2 job(s)',
+    ]);
+  });
+
+  it('records a failure message in the activity log when a source fetch fails', async () => {
+    const failingSource: NormalizingJobSource = {
+      name: 'Failing',
+      fetchJobs: jest.fn().mockRejectedValue(new Error('network down')),
+      normalize: jest.fn(),
+    };
+    const { persistenceService } = fakePersistenceService();
+    const { notifierService } = fakeNotifierService();
+    const { filterConfigService } = fakeFilterConfigService();
+    const parseActivityLog = fakeParseActivityLog();
+    const service = new SchedulerService(
+      [failingSource],
+      fakeFilterService(),
+      persistenceService,
+      notifierService,
+      fakeSourceConfigService(),
+      filterConfigService,
+      parseActivityLog,
+    );
+
+    await service.runPipeline();
+
+    // eslint-disable-next-line @typescript-eslint/unbound-method -- this is a jest mock, not a bound method
+    expect(parseActivityLog.record).toHaveBeenCalledWith(
+      'Failing',
+      'Failed to fetch jobs from this source',
+    );
+    // eslint-disable-next-line @typescript-eslint/unbound-method -- this is a jest mock, not a bound method
+    expect(parseActivityLog.finish).toHaveBeenCalled();
   });
 });

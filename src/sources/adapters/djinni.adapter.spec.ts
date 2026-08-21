@@ -13,6 +13,11 @@ const LISTING_HTML = `
     <div class="d-flex flex-column gap-1">
       <a href="/jobs/843917-senior-react-developer/" class="job_item__header-link d-flex flex-column gap-1 text-decoration-none">
         <header class="row gx-2 align-items-start">
+          <div class="col-auto">
+            <div class="userpic-wrapper userpic-color_0 userpic_sm_3 is-company-logo userpic--logo" data-initials="N">
+              <img class="userpic-image userpic-image_img" src="https://p.djinni.co/d0/32704adcab409c12bdab3238166b61/360x160.png" loading="lazy" alt="" />
+            </div>
+          </div>
           <div class="col">
             <h2 class="job-item__position fs-4 m-0 mb-1">Senior React Developer</h2>
             <div class="d-flex flex-wrap align-items-center column-gap-1">
@@ -79,10 +84,28 @@ describe('DjinniAdapter', () => {
       title: 'Senior React Developer',
       company: 'N-iX',
       href: DETAIL_URL,
+      logoUrl:
+        'https://p.djinni.co/d0/32704adcab409c12bdab3238166b61/360x160.png',
       location: 'Україна',
       description:
         'We are looking for a Senior React Developer to join our team. Requirements: 5+ years with React, TypeScript, and Redux.',
     });
+  });
+
+  it('omits logoUrl when a listing has no company logo image', async () => {
+    const listingWithoutLogo = LISTING_HTML.replace(
+      /<div class="userpic-wrapper[^]*?<\/div>\s*<\/div>\s*/,
+      '',
+    );
+    const httpService = mockHttpFor({
+      [LISTING_URL]: listingWithoutLogo,
+      [DETAIL_URL]: DETAIL_HTML,
+    });
+
+    const adapter = await createAdapter(httpService);
+    const jobs = await adapter.fetchJobs();
+
+    expect(jobs[0].logoUrl).toBeUndefined();
   });
 
   it('falls back to the truncated listing description when a detail-page fetch fails', async () => {
